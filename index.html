@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Stoplight</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { min-height: 100dvh; font-family: Georgia, serif; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f0f0f; }
+  .page { display: none; width: 100%; min-height: 100dvh; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .page.active { display: flex; }
+
+  .id-box { width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; }
+  .id-title { color: #aaa; letter-spacing: 0.15em; text-transform: uppercase; font-style: italic; font-size: 1.2rem; margin-bottom: 8px; }
+  .id-sub { color: #555; font-size: 0.85rem; margin-bottom: 32px; letter-spacing: 0.05em; }
+  .id-input { width: 100%; padding: 18px 20px; border-radius: 14px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 1.3rem; font-family: Georgia, serif; text-align: center; letter-spacing: 0.1em; outline: none; transition: border 0.2s; }
+  .id-input:focus { border-color: #16a34a; }
+  .id-btn { margin-top: 20px; width: 100%; padding: 18px; border-radius: 14px; border: none; background: #16a34a; color: white; font-size: 1.1rem; font-family: Georgia, serif; cursor: pointer; letter-spacing: 0.05em; }
+  .id-btn:active { background: #15803d; }
+  .teacher-link { margin-top: 40px; color: #333; font-size: 0.75rem; letter-spacing: 0.1em; cursor: pointer; text-decoration: underline; }
+  .id-divider { width: 100%; border: none; border-top: 1px solid #222; margin: 18px 0; }
+  .id-label { color: #555; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; align-self: flex-start; margin-bottom: 6px; }
+  .id-err { color: #dc2626; font-size: 0.85rem; margin-top: 10px; display: none; }
+
+  /* Dashboard codeword setting */
+  .codeword-section { width: 100%; max-width: 900px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .codeword-label { color: #666; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  .codeword-input { flex: 1; min-width: 160px; padding: 10px 16px; border-radius: 10px; border: 2px solid #333; background: #111; color: white; font-size: 1rem; font-family: Georgia, serif; outline: none; transition: border 0.2s; }
+  .codeword-input:focus { border-color: #ca8a04; }
+  .codeword-btn { padding: 10px 22px; border-radius: 10px; border: none; background: #ca8a04; color: white; font-family: Georgia, serif; font-size: 0.9rem; cursor: pointer; white-space: nowrap; }
+  .codeword-status { font-size: 0.8rem; color: #4ade80; display: none; margin-left: 4px; }
+
+  #menu { background: #0f0f0f; }
+  .menu-header { color: #aaa; letter-spacing: 0.15em; text-transform: uppercase; font-style: italic; font-size: clamp(1.1rem, 4vw, 1.5rem); margin-bottom: 6px; }
+  .menu-sub { color: #555; font-size: 0.85rem; letter-spacing: 0.05em; margin-bottom: 16px; }
+  .student-badge { color: #444; font-size: 0.85rem; margin-bottom: 28px; letter-spacing: 0.05em; }
+  .btn { width: 100%; max-width: 400px; padding: 22px 24px; border-radius: 16px; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; transition: transform 0.15s; }
+  .btn:active { transform: scale(0.97); }
+  .btn-green  { background: #16a34a; box-shadow: 0 8px 32px rgba(22,163,74,0.4); }
+  .btn-yellow { background: #ca8a04; box-shadow: 0 8px 32px rgba(202,138,4,0.4); }
+  .btn-red    { background: #dc2626; box-shadow: 0 8px 32px rgba(220,38,38,0.4); }
+  .btn-emoji  { font-size: 2.2rem; }
+  .btn-label  { font-weight: bold; font-size: clamp(1rem, 3.5vw, 1.2rem); display: block; text-align: left; }
+  .btn-desc   { font-size: 0.85rem; opacity: 0.85; font-style: italic; text-align: left; }
+  .footer { color: #333; font-size: 0.75rem; letter-spacing: 0.1em; margin-top: 32px; }
+
+  #signal { position: relative; overflow: hidden; }
+  .ring { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); animation: pulse 2s infinite; }
+  .ring1 { width: 280px; height: 280px; }
+  .ring2 { width: 460px; height: 460px; animation-delay: 0.5s; }
+  .signal-emoji { font-size: clamp(80px, 20vw, 130px); filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3)); z-index: 1; }
+  .signal-label { font-size: clamp(2.2rem, 9vw, 4rem); font-weight: bold; color: white; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -0.02em; margin-top: 20px; z-index: 1; }
+  .signal-sub { font-size: clamp(1rem, 3.5vw, 1.4rem); color: rgba(255,255,255,0.85); font-style: italic; margin-top: 10px; z-index: 1; }
+  .back-btn { margin-top: 56px; padding: 14px 36px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); border-radius: 50px; color: white; font-size: 1rem; letter-spacing: 0.05em; cursor: pointer; font-family: Georgia, serif; z-index: 1; }
+  .back-btn:active { background: rgba(255,255,255,0.35); }
+
+  #teacher-login { background: #0f0f0f; }
+  .login-box { width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; }
+  .login-title { color: #aaa; letter-spacing: 0.15em; text-transform: uppercase; font-style: italic; font-size: 1.2rem; margin-bottom: 32px; }
+  .login-input { width: 100%; padding: 16px 20px; border-radius: 14px; border: 2px solid #333; background: #1a1a1a; color: white; font-size: 1.1rem; font-family: Georgia, serif; outline: none; transition: border 0.2s; }
+  .login-input:focus { border-color: #ca8a04; }
+  .login-btn { margin-top: 16px; width: 100%; padding: 16px; border-radius: 14px; border: none; background: #ca8a04; color: white; font-size: 1rem; font-family: Georgia, serif; cursor: pointer; letter-spacing: 0.05em; }
+  .login-err { color: #dc2626; font-size: 0.85rem; margin-top: 12px; display: none; }
+  .back-link { margin-top: 24px; color: #444; font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+
+  #dashboard { background: #0f0f0f; justify-content: flex-start; padding-top: 40px; overflow-y: auto; }
+  .dash-header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .dash-title { color: #aaa; letter-spacing: 0.15em; text-transform: uppercase; font-style: italic; font-size: 1.1rem; }
+  .dash-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .dash-btn { padding: 10px 20px; border-radius: 10px; border: none; font-family: Georgia, serif; font-size: 0.85rem; cursor: pointer; letter-spacing: 0.05em; }
+  .export-btn { background: #16a34a; color: white; }
+  .clear-btn  { background: #dc2626; color: white; }
+  .logout-btn { background: #333; color: #aaa; }
+  .stats { width: 100%; max-width: 900px; display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 100px; padding: 16px; border-radius: 12px; text-align: center; }
+  .stat-green  { background: rgba(22,163,74,0.15);  border: 1px solid rgba(22,163,74,0.3); }
+  .stat-yellow { background: rgba(202,138,4,0.15);  border: 1px solid rgba(202,138,4,0.3); }
+  .stat-red    { background: rgba(220,38,38,0.15);  border: 1px solid rgba(220,38,38,0.3); }
+  .stat-num   { font-size: 2rem; font-weight: bold; color: white; }
+  .stat-label { font-size: 0.75rem; color: #666; margin-top: 4px; letter-spacing: 0.05em; }
+  .log-table  { width: 100%; max-width: 900px; border-collapse: collapse; }
+  .log-table th { text-align: left; padding: 10px 14px; color: #555; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid #222; }
+  .log-table td { padding: 12px 14px; color: #ccc; font-size: 0.9rem; border-bottom: 1px solid #1a1a1a; }
+  .log-table tr:hover td { background: #111; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+  .badge-green  { background: rgba(22,163,74,0.2);  color: #4ade80; }
+  .badge-yellow { background: rgba(202,138,4,0.2);  color: #fbbf24; }
+  .badge-red    { background: rgba(220,38,38,0.2);  color: #f87171; }
+  .empty-state { color: #333; font-style: italic; margin-top: 40px; }
+
+  @keyframes pulse {
+    0%   { transform: scale(0.8); opacity: 0.6; }
+    50%  { transform: scale(1.1); opacity: 0.15; }
+    100% { transform: scale(0.8); opacity: 0.6; }
+  }
+</style>
+</head>
+<body>
+
+<!-- STUDENT ID ENTRY -->
+<div id="id-page" class="page active">
+  <div class="id-box">
+    <div class="id-title">Class Stoplight</div>
+    <div class="id-sub">Enter your student number and today's codeword</div>
+    <div class="id-label">Student Number</div>
+    <input class="id-input" id="student-id-input" type="text" placeholder="e.g. 2024001" maxlength="20" />
+    <hr class="id-divider">
+    <div class="id-label">Class Codeword</div>
+    <input class="id-input" id="codeword-input" type="text" placeholder="Enter today's codeword" maxlength="40" autocomplete="off" />
+    <div class="id-err" id="id-err">❌ Incorrect codeword. Please try again.</div>
+    <button class="id-btn" onclick="submitID()">Continue →</button>
+    <div class="teacher-link" onclick="showPage('teacher-login')">Teacher Login</div>
+  </div>
+</div>
+
+<!-- STUDENT MENU -->
+<div id="menu" class="page">
+  <div class="menu-header">How are you doing?</div>
+  <div class="menu-sub">Tap your answer and show the screen</div>
+  <div class="student-badge" id="student-badge"></div>
+  <button class="btn btn-green"  onclick="showSignal('green')">
+    <span class="btn-emoji">✅</span>
+    <div><span class="btn-label">No Problem!</span><span class="btn-desc">I've got this</span></div>
+  </button>
+  <button class="btn btn-yellow" onclick="showSignal('yellow')">
+    <span class="btn-emoji">🤔</span>
+    <div><span class="btn-label">Not Sure</span><span class="btn-desc">Could use a review</span></div>
+  </button>
+  <button class="btn btn-red" onclick="showSignal('red')">
+    <span class="btn-emoji">🆘</span>
+    <div><span class="btn-label">Need Help!</span><span class="btn-desc">Please slow down</span></div>
+  </button>
+  <div class="footer">CLASS FEEDBACK TOOL</div>
+</div>
+
+<!-- SIGNAL SCREEN -->
+<div id="signal" class="page">
+  <div class="ring ring1"></div>
+  <div class="ring ring2"></div>
+  <div class="signal-emoji" id="sig-emoji"></div>
+  <div class="signal-label"  id="sig-label"></div>
+  <div class="signal-sub"    id="sig-sub"></div>
+  <button class="back-btn" onclick="showPage('id-page')">← Change Answer</button>
+</div>
+
+<!-- TEACHER LOGIN -->
+<div id="teacher-login" class="page">
+  <div class="login-box">
+    <div class="login-title">Teacher Access</div>
+    <input class="login-input" id="pw-input" type="password" placeholder="Enter password" />
+    <button class="login-btn" onclick="checkPassword()">Login</button>
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+    <div class="back-link" onclick="showPage('id-page')">← Back</div>
+  </div>
+</div>
+
+<!-- TEACHER DASHBOARD -->
+<div id="dashboard" class="page">
+  <div class="dash-header">
+    <div class="dash-title">📊 Response Log</div>
+    <div class="dash-actions">
+      <button class="dash-btn export-btn" onclick="exportCSV()">Export CSV</button>
+      <button class="dash-btn clear-btn"  onclick="clearLog()">Clear Log</button>
+      <button class="dash-btn logout-btn" onclick="showPage('id-page')">Logout</button>
+    </div>
+  </div>
+  <div class="codeword-section">
+    <span class="codeword-label">🔑 Access Codeword</span>
+    <input class="codeword-input" id="codeword-setting" type="text" placeholder="Set a codeword for students..." maxlength="40" />
+    <button class="codeword-btn" onclick="saveCodeword()">Save</button>
+    <span class="codeword-status" id="codeword-status">✓ Saved!</span>
+  </div>
+  <div class="stats">
+    <div class="stat stat-green"><div class="stat-num" id="count-green">0</div><div class="stat-label">✅ No Problem</div></div>
+    <div class="stat stat-yellow"><div class="stat-num" id="count-yellow">0</div><div class="stat-label">🤔 Not Sure</div></div>
+    <div class="stat stat-red"><div class="stat-num" id="count-red">0</div><div class="stat-label">🆘 Need Help</div></div>
+  </div>
+  <table class="log-table">
+    <thead><tr><th>#</th><th>Student ID</th><th>Response</th><th>Time</th></tr></thead>
+    <tbody id="log-tbody"></tbody>
+  </table>
+  <div class="empty-state" id="empty-state">No responses yet.</div>
+</div>
+
+<!-- Firebase compat (no module needed) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqFbEvghn-HDUGKbT2mko-sXExp5Zrc2I",
+    authDomain: "confirmationcheck-bcf64.firebaseapp.com",
+    databaseURL: "https://confirmationcheck-bcf64-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "confirmationcheck-bcf64",
+    storageBucket: "confirmationcheck-bcf64.firebasestorage.app",
+    messagingSenderId: "839041375094",
+    appId: "1:839041375094:web:d80d2e75fd57f279cff857"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db     = firebase.database();
+  const logRef = db.ref("responses");
+
+  const TEACHER_PASSWORD = "0t3m0nt3ch!";
+  let currentStudentID = "";
+  let allResponses     = [];
+
+  const signalData = {
+    green:  { bg: "#16a34a", emoji: "✅", label: "No Problem!", sub: "I've got this" },
+    yellow: { bg: "#ca8a04", emoji: "🤔", label: "Not Sure",    sub: "Could use a review" },
+    red:    { bg: "#dc2626", emoji: "🆘", label: "Need Help!",  sub: "Please slow down" }
+  };
+
+  function showPage(id) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  function submitID() {
+    const val = document.getElementById("student-id-input").value.trim();
+    const entered = document.getElementById("codeword-input").value.trim();
+    if (!val) { alert("Please enter your student number."); return; }
+    const errEl = document.getElementById("id-err");
+    // If a codeword is set, require it
+    db.ref("settings/codeword").get().then(snap => {
+      const savedCode = snap.val();
+      if (savedCode && entered.toLowerCase() !== savedCode.toLowerCase()) {
+        errEl.style.display = "block";
+        document.getElementById("codeword-input").focus();
+        return;
+      }
+      errEl.style.display = "none";
+      currentStudentID = val;
+      document.getElementById("student-badge").textContent = "Student: " + val;
+      document.getElementById("student-id-input").value = "";
+      document.getElementById("codeword-input").value = "";
+      showPage("menu");
+    });
+  }
+
+  function showSignal(color) {
+    const d = signalData[color];
+    document.getElementById("sig-emoji").textContent = d.emoji;
+    document.getElementById("sig-label").textContent = d.label;
+    document.getElementById("sig-sub").textContent   = d.sub;
+    document.getElementById("signal").style.background = d.bg;
+    showPage("signal");
+    logRef.push({
+      studentID: currentStudentID,
+      response:  color,
+      label:     d.label,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  function checkPassword() {
+    const pw = document.getElementById("pw-input").value;
+    if (pw === TEACHER_PASSWORD) {
+      document.getElementById("pw-input").value = "";
+      document.getElementById("login-err").style.display = "none";
+      showPage("dashboard");
+      loadDashboard();
+    } else {
+      document.getElementById("login-err").style.display = "block";
+    }
+  }
+
+  function loadDashboard() {
+    loadCodewordSetting();
+    logRef.on("value", (snapshot) => {
+      allResponses = [];
+      const data = snapshot.val();
+      if (data) {
+        Object.entries(data).forEach(([key, val]) => allResponses.push({ key, ...val }));
+        allResponses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      }
+      renderDashboard();
+    });
+  }
+
+  function renderDashboard() {
+    const tbody = document.getElementById("log-tbody");
+    const empty = document.getElementById("empty-state");
+    let green = 0, yellow = 0, red = 0;
+    allResponses.forEach(r => {
+      if (r.response === "green")       green++;
+      else if (r.response === "yellow") yellow++;
+      else if (r.response === "red")    red++;
+    });
+    document.getElementById("count-green").textContent  = green;
+    document.getElementById("count-yellow").textContent = yellow;
+    document.getElementById("count-red").textContent    = red;
+
+    if (allResponses.length === 0) {
+      tbody.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+    tbody.innerHTML = allResponses.map((r, i) => {
+      const time = new Date(r.timestamp).toLocaleString();
+      return `<tr>
+        <td>${allResponses.length - i}</td>
+        <td>${r.studentID}</td>
+        <td><span class="badge badge-${r.response}">${r.label}</span></td>
+        <td>${time}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  function saveCodeword() {
+    const val = document.getElementById("codeword-setting").value.trim();
+    db.ref("settings/codeword").set(val || null).then(() => {
+      const st = document.getElementById("codeword-status");
+      st.style.display = "inline";
+      setTimeout(() => st.style.display = "none", 2000);
+    });
+  }
+
+  function loadCodewordSetting() {
+    db.ref("settings/codeword").get().then(snap => {
+      const v = snap.val();
+      document.getElementById("codeword-setting").value = v || "";
+    });
+  }
+
+  function exportCSV() {
+    if (allResponses.length === 0) { alert("No data to export."); return; }
+    const rows = [["#", "Student ID", "Response", "Timestamp"]];
+    allResponses.forEach((r, i) => rows.push([i + 1, r.studentID, r.label, r.timestamp]));
+    const csv  = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href = url; a.download = "stoplight_responses.csv"; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function clearLog() {
+    if (!confirm("Clear ALL responses? This cannot be undone.")) return;
+    logRef.remove();
+  }
+
+  document.getElementById("student-id-input").addEventListener("keydown", e => { if (e.key === "Enter") submitID(); });
+  document.getElementById("codeword-input").addEventListener("keydown", e => { if (e.key === "Enter") submitID(); });
+  document.getElementById("pw-input").addEventListener("keydown", e => { if (e.key === "Enter") checkPassword(); });
+</script>
+</body>
+</html>
