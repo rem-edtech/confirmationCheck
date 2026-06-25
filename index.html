@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -176,7 +177,7 @@
     <div class="stat stat-red"><div class="stat-num" id="count-red">0</div><div class="stat-label">🆘 Need Help</div></div>
   </div>
   <table class="log-table">
-    <thead><tr><th>#</th><th>Student ID</th><th>Response</th><th>Time</th></tr></thead>
+    <thead><tr><th>#</th><th>Student ID</th><th>Codeword</th><th>Response</th><th>Time</th></tr></thead>
     <tbody id="log-tbody"></tbody>
   </table>
   <div class="empty-state" id="empty-state">No responses yet.</div>
@@ -203,6 +204,7 @@
 
   const TEACHER_PASSWORD = "0t3m0nt3ch!";
   let currentStudentID = "";
+  let currentCodeword  = "";
   let allResponses     = [];
 
   const signalData = {
@@ -231,6 +233,7 @@
       }
       errEl.style.display = "none";
       currentStudentID = val;
+      currentCodeword = entered;
       document.getElementById("student-badge").textContent = "Student: " + val;
       document.getElementById("student-id-input").value = "";
       document.getElementById("codeword-input").value = "";
@@ -247,6 +250,7 @@
     showPage("signal");
     logRef.push({
       studentID: currentStudentID,
+      codeword:  currentCodeword,
       response:  color,
       label:     d.label,
       timestamp: new Date().toISOString()
@@ -302,6 +306,7 @@
       return `<tr>
         <td>${allResponses.length - i}</td>
         <td>${r.studentID}</td>
+        <td style="color:#666;font-style:italic;">${r.codeword || '—'}</td>
         <td><span class="badge badge-${r.response}">${r.label}</span></td>
         <td>${time}</td>
       </tr>`;
@@ -326,8 +331,8 @@
 
   function exportCSV() {
     if (allResponses.length === 0) { alert("No data to export."); return; }
-    const rows = [["#", "Student ID", "Response", "Timestamp"]];
-    allResponses.forEach((r, i) => rows.push([i + 1, r.studentID, r.label, r.timestamp]));
+    const rows = [["#", "Student ID", "Codeword", "Response", "Timestamp"]];
+    allResponses.forEach((r, i) => rows.push([i + 1, r.studentID, r.codeword || "", r.label, r.timestamp]));
     const csv  = rows.map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url  = URL.createObjectURL(blob);
